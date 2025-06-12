@@ -6,8 +6,8 @@ import {
   Box, Table, Button, Dialog, Checkbox, TableRow, TableBody, TableCell, TableHead, TextField, IconButton, DialogTitle, DialogActions, DialogContent
 } from '@mui/material';
 
-// const requestAddress = 'https://travel-tefy.onrender.com';
-const requestAddress = 'https://travel-tefy.onrender.com';
+// const requestAddress = 'https://escapadezanzibar.exclusive-technology.net';
+const requestAddress = 'https://escapadezanzibar.exclusive-technology.net';
 
 const PERMISSION_FIELDS = [
   { key: 'insert', label: 'Insert New' },

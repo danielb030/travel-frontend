@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // dotenv.config();
 
-const requestAddress = 'https://travel-tefy.onrender.com';
+const requestAddress = 'https://escapadezanzibar.exclusive-technology.net';
 
 export const getHotelData = async () => {
   try {

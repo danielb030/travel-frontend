@@ -6,7 +6,7 @@ import { axiosApi } from './axios';
 
 // dotenv.config();
 
-const requestAddress = 'https://travel-tefy.onrender.com';
+const requestAddress = 'https://escapadezanzibar.exclusive-technology.net';
 
 const setTokenWithExpiry = (key, token, expiryTimeInMinutes) => {
   const now = new Date();
