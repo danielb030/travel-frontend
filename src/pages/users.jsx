@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
-import { Add as AddIcon, Edit as EditIcon, Check as CheckIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Check as CheckIcon, Delete as DeleteIcon, LockReset as LockResetIcon } from '@mui/icons-material';
 import {
   Box, Table, Button, Dialog, Checkbox, TableRow, TableBody, TableCell, TableHead, TextField, IconButton, DialogTitle, DialogActions, DialogContent
 } from '@mui/material';
@@ -38,11 +38,47 @@ export default function UsersPage() {
   const [emailError, setEmailError] = useState('');
   const [submitError, setSubmitError] = useState('');
 
+  const [passwordDialog, setPasswordDialog] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ id: '', newPass: '', confirmPass: '' });
+  const [passwordError, setPasswordError] = useState('');
+
   useEffect(() => {
     axios.get(`${requestAddress}/api/admin/user`)
       .then(res => setUsers(res.data))
       .catch(() => setUsers([]));
   }, []);
+  const isValidPassword = password => password.length >= 6;
+  // Change password logic (no old password)
+  // Update handleChangePassword for password changes
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    if (!passwordForm.newPass || !passwordForm.confirmPass) {
+      setPasswordError('All fields are required.');
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirmPass) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+    if (!isValidPassword(passwordForm.newPass)) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+    try {
+      await axios.post(`${requestAddress}/api/auth/changepass/${passwordForm.id}`, {
+        newPass: passwordForm.newPass,
+      });
+      setPasswordDialog(false);
+    } catch (err) {
+      setPasswordError(err.response?.data?.msg || 'Change password failed');
+    }
+  };
+  
+  const handleOpenPassword = (user) => {
+    setPasswordForm({ id: user._id, newPass: '', confirmPass: '' });
+    setPasswordError('');
+    setPasswordDialog(true);
+  };
 
   const handleOpen = (user = null) => {
     setEditUser(user);
@@ -80,6 +116,18 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    try {
+      await axios.post(`${requestAddress}/api/auth/deleteuser`, 
+        { id: userId }, // Send ID in the request body
+      );
+      setUsers(users.filter(u => u._id !== userId));
+    } catch (err) {
+      alert(err.response?.data?.msg || 'Delete failed');
+    }
+  };
+
   const handlePermissionChange = key => {
     setForm(prev => ({
       ...prev,
@@ -94,6 +142,13 @@ export default function UsersPage() {
       return;
     }
     setEmailError('');
+    
+    // Add password validation for new users
+    if (!editUser && !isValidPassword(form.password)) {
+      setSubmitError('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       if (editUser) {
         await axios.post(`${requestAddress}/api/auth/changeuser`, {
@@ -148,6 +203,8 @@ export default function UsersPage() {
               ))}
               <TableCell align="right">
                 <IconButton onClick={() => handleOpen(user)}><EditIcon /></IconButton>
+                <IconButton onClick={() => handleOpenPassword(user)}><LockResetIcon /></IconButton>
+                <IconButton color="error" onClick={() => handleDeleteUser(user._id)}><DeleteIcon /></IconButton>
               </TableCell>
             </TableRow>
           ))}
@@ -180,6 +237,8 @@ export default function UsersPage() {
               type="password"
               value={form.password}
               onChange={handleChange}
+              helperText="Password must be at least 6 characters long"
+              error={form.password && !isValidPassword(form.password)}
               fullWidth
             />
           )}
@@ -206,6 +265,36 @@ export default function UsersPage() {
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" disabled={!!emailError}>{editUser ? 'Update' : 'Add'}</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={passwordDialog} onClose={() => setPasswordDialog(false)}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField
+            label="New Password"
+            type="password"
+            value={passwordForm.newPass}
+            onChange={e => setPasswordForm(f => ({ ...f, newPass: e.target.value }))}
+            helperText="Password must be at least 6 characters long"
+            error={passwordForm.newPass && !isValidPassword(passwordForm.newPass)}
+            fullWidth
+          />
+          <TextField
+            label="Confirm New Password"
+            type="password"
+            value={passwordForm.confirmPass}
+            onChange={e => setPasswordForm(f => ({ ...f, confirmPass: e.target.value }))}
+            fullWidth
+          />
+          {passwordError && (
+            <Box color="error.main" mt={1} fontSize={14}>
+              {passwordError}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPasswordDialog(false)}>Cancel</Button>
+          <Button onClick={handleChangePassword} variant="contained">Change</Button>
         </DialogActions>
       </Dialog>
     </Box>

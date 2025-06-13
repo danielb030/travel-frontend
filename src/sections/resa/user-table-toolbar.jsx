@@ -19,6 +19,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import userStore from 'src/store/userStore';
+
 import Iconify from 'src/components/iconify';
 
 dayjs.extend(utc);
@@ -43,6 +45,7 @@ export default function UserTableToolbar({
   
   
   const [open, setOpen] = useState(null);
+  const isAdmin = userStore((state) => state.isAdmin);
 
   const handleDateChange = (newDate) => {
     const date = newDate ? dayjs(newDate).toDate() : null;
@@ -182,31 +185,34 @@ export default function UserTableToolbar({
           />
         </LocalizationProvider>
 
-        <input
-          type="file"
-          id="file-upload"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-        <label htmlFor="file-upload">
-          <Button
-            variant="contained"
-            color="primary"
-            component="span"
-            sx={{ ml: 2 }}
-            startIcon={
-              uploading ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <Iconify icon="eva:upload-fill" />
-              )
-            }
-            disabled={uploading}
-          >
-            {uploading ? 'Uploading...' : 'Upload File'}
-          </Button>
-        </label>
-
+        {isAdmin && (
+          <>
+            <input
+              type="file"
+              id="file-upload"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <label htmlFor="file-upload">
+              <Button
+                variant="contained"
+                color="primary"
+                component="span"
+                sx={{ ml: 2 }}
+                startIcon={
+                  uploading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <Iconify icon="eva:upload-fill" />
+                  )
+                }
+                disabled={uploading}
+              >
+                {uploading ? 'Uploading...' : 'Upload File'}
+              </Button>
+            </label>
+          </>
+        )}
 
         <Button
           variant="contained"

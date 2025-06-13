@@ -67,10 +67,16 @@ export default function Nav({ openNav, onCloseNav }) {
   const renderMenu = (
     <Stack component="nav" spacing={0.5} sx={{ px: 2 }}>
       {navConfig
-        .filter((item) => permissions[item.access] === true || isAdmin === true)
+        .filter((item) => 
+          isAdmin === true || item.access[0] === 'all' ||
+          (Array.isArray(item.access)
+            ? item.access.some((access) => permissions[access] === true)
+            : permissions[item.access] === true)
+        )
         .map((item) => (
           <NavItem key={item.title} item={item} />
-        ))}
+        )
+        )}
     </Stack>
   );
 
